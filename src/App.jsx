@@ -227,28 +227,33 @@ function App() {
     );
   };
 
-  const renderReceipt = () => (
-    <div style={{
-      maxWidth: '500px',
-      margin: 'auto',
-      padding: '30px',
-      textAlign: 'center',
-      background: '#fff',
-      borderRadius: '10px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-      marginTop: '30px'
-    }}>
-      <h2 style={{ color: '#28a745' }}>Payment Successful!</h2>
-      <p><strong>Tracking ID:</strong> {trackingId}</p>
-      <p><strong>Transaction ID:</strong> TXN{Math.floor(10000000 + Math.random() * 90000000)}</p>
-      <p><strong>Total:</strong> ${formValues.weight * 60}</p>
+  const renderReceipt = () => {
+    const data = shipments[trackingId];
+    if (!data) return null;
 
-      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
-        <a href={`#track/${trackingId}`} style={linkButtonStyle}>View Public Tracking</a>
-        <a href={`#dashboard/${trackingId}`} style={linkButtonStyle}>Access Dashboard</a>
+    return (
+      <div style={{
+        maxWidth: '500px',
+        margin: 'auto',
+        padding: '30px',
+        textAlign: 'center',
+        background: '#fff',
+        borderRadius: '10px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        marginTop: '30px'
+      }}>
+        <h2 style={{ color: '#28a745' }}>Payment Successful!</h2>
+        <p><strong>Tracking ID:</strong> {trackingId}</p>
+        <p><strong>Transaction ID:</strong> TXN{Math.floor(10000000 + Math.random() * 90000000)}</p>
+        <p><strong>Total:</strong> ${formValues.weight * 60}</p>
+
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
+          <a href={`#track/${trackingId}`} style={linkButtonStyle}>View Public Tracking</a>
+          <a href={`#dashboard/${trackingId}`} style={linkButtonStyle}>Access Dashboard</a>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderDashboard = () => {
     const data = shipments[trackingId];
@@ -436,41 +441,5 @@ function App() {
     </div>
   );
 }
-
-// Styles
-const inputStyle = {
-  width: '100%',
-  padding: '10px',
-  borderRadius: '6px',
-  border: '1px solid #ccc'
-};
-
-const linkButtonStyle = {
-  padding: '10px 20px',
-  backgroundColor: '#003366',
-  color: 'white',
-  textDecoration: 'none',
-  borderRadius: '6px',
-  fontWeight: 'bold',
-  display: 'inline-block',
-  marginTop: '10px'
-};
-
-const cardStyle = {
-  padding: '10px',
-  border: '1px solid #ddd',
-  borderRadius: '6px'
-};
-
-const tableHeaderStyle = {
-  textAlign: 'left',
-  padding: '10px',
-  borderBottom: '1px solid #ccc'
-};
-
-const tableCellStyle = {
-  padding: '10px',
-  borderBottom: '1px solid #eee'
-};
 
 export default App;

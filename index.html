@@ -12,6 +12,9 @@
     #root {
       padding: 20px;
     }
+    input, select, button {
+      font-family: Arial, sans-serif;
+    }
   </style>
 </head>
 <body>
@@ -22,19 +25,19 @@
   <script src="https://unpkg.com/react-dom @18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/ @babel/standalone/babel.min.js"></script>
 
-  <!-- Firebase + Firestore -->
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js ';
     import { getFirestore, collection, doc, addDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js ';
 
-    // Replace with your actual Firebase config
+    // ✅ YOUR FIREBASE CONFIG FROM CONSOLE
     const firebaseConfig = {
       apiKey: "AIzaSyA-xbyIbrFwQVQU0WxV2-5bxtWJfqwGMGU",
       authDomain: "st-expressgit.firebaseapp.com",
       projectId: "st-expressgit",
-      storageBucket: "st-expressgit.firebasestorage.app",
+      storageBucket: "st-expressgit.appspot.com",
       messagingSenderId: "237397224823",
-      appId: "1:237397224823:web:b410785c3f80c6a8f2c572"
+      appId: "1:237397224823:web:d0abe2b4c2b00665f2c572"
     };
 
     // Initialize Firebase
@@ -54,27 +57,25 @@
     };
   </script>
 
-  <!-- App -->
+  <!-- Logistics Tracking App Code -->
   <script type="text/babel">
     const { useState, useEffect } = React;
 
     function App() {
       const [currentView, setCurrentView] = useState('home');
       const [trackingId, setTrackingId] = useState('');
-      const [shipmentData, setShipmentData] = useState({});
-      const [shipments, setShipments] = useState({});
-
       const [formValues, setFormValues] = useState({
         sender: '',
         recipient: '',
         origin: '',
         destination: '',
         weight: '',
-        description: '',
-        carrier: 'SwiftTrack Express',
+        description: ''
       });
 
-      // Handle hash changes
+      const [shipments, setShipments] = useState({});
+
+      // Handle URL hash changes
       useEffect(() => {
         const handleHashChange = () => {
           const hash = window.location.hash.replace('#', '');
@@ -105,6 +106,21 @@
         return () => window.removeEventListener('hashchange', handleHashChange);
       }, []);
 
+      // Load shipments from Firestore
+      useEffect(() => {
+        const { shipmentsCollection, onSnapshot } = window.firebaseDB;
+
+        const unsubscribe = onSnapshot(shipmentsCollection, (snapshot) => {
+          const data = {};
+          snapshot.forEach((doc) => {
+            data[doc.id] = doc.data();
+          });
+          setShipments(data);
+        });
+
+        return () => unsubscribe();
+      }, []);
+
       const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormValues({ ...formValues, [name]: value });
@@ -119,7 +135,7 @@
         const cost = formValues.weight * 60; // $60 per kg
         const newShipment = {
           id,
-          carrier: formValues.carrier,
+          carrier: 'SwiftTrack Express',
           sender: formValues.sender,
           recipient: formValues.recipient,
           origin: formValues.origin,
@@ -131,20 +147,17 @@
           currentLocation: formValues.origin,
           estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           notes: '',
-          events: [{ date: new Date().toISOString().split('T')[0], description: 'Shipment created' }],
+          events: [{ date: new Date().toISOString().split('T')[0], description: 'Shipment created' }]
         };
 
-        const { shipmentsCollection, addDoc } = window.firebaseDB;
-        await addDoc(shipmentsCollection, newShipment);
-
+        await window.firebaseDB.addDoc(window.firebaseDB.shipmentsCollection, newShipment);
         setTrackingId(id);
         window.location.hash = `/receipt/${id}`;
       };
 
       const updateShipmentStatus = async (key, value) => {
-        const { updateDoc, doc } = window.firebaseDB;
-        const shipmentRef = doc(window.firebaseDB.shipmentsCollection, trackingId);
-        await updateDoc(shipmentRef, { [key]: value });
+        const shipmentRef = window.firebaseDB.doc(window.firebaseDB.shipmentsCollection, trackingId);
+        await window.firebaseDB.updateDoc(shipmentRef, { [key]: value });
       };
 
       const renderLogo = () => (
@@ -243,27 +256,27 @@
                 textAlign: 'left'
               }}>
                 <div>
-                  <label>Sender</label>
+                  <label>Sender</label><br/>
                   <input name="sender" value={formValues.sender} onChange={handleInputChange} style={inputStyle} />
                 </div>
                 <div>
-                  <label>Recipient</label>
+                  <label>Recipient</label><br/>
                   <input name="recipient" value={formValues.recipient} onChange={handleInputChange} style={inputStyle} />
                 </div>
                 <div>
-                  <label>Origin</label>
+                  <label>Origin</label><br/>
                   <input name="origin" value={formValues.origin} onChange={handleInputChange} style={inputStyle} />
                 </div>
                 <div>
-                  <label>Destination</label>
+                  <label>Destination</label><br/>
                   <input name="destination" value={formValues.destination} onChange={handleInputChange} style={inputStyle} />
                 </div>
                 <div>
-                  <label>Weight (kg)</label>
+                  <label>Weight (kg)</label><br/>
                   <input name="weight" type="number" value={formValues.weight} onChange={handleInputChange} style={inputStyle} />
                 </div>
                 <div>
-                  <label>Description</label>
+                  <label>Description</label><br/>
                   <input name="description" value={formValues.description} onChange={handleInputChange} style={inputStyle} />
                 </div>
               </form>
@@ -321,9 +334,8 @@
         if (!data) return <p>Invalid tracking ID</p>;
 
         const handleUpdate = (key, value) => {
-          const { updateDoc, doc } = window.firebaseDB;
-          const shipmentRef = doc(window.firebaseDB.shipmentsCollection, trackingId);
-          updateDoc(shipmentRef, { [key]: value });
+          const shipmentRef = window.firebaseDB.doc(window.firebaseDB.shipmentsCollection, trackingId);
+          window.firebaseDB.updateDoc(shipmentRef, { [key]: value });
         };
 
         const addEvent = () => {
@@ -390,7 +402,7 @@
             <div style={{ marginTop: '20px' }}>
               <h3 style={{ marginBottom: '10px' }}>Events</h3>
               <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-                {data.events.map((e, i) => (
+                {data.events?.map((e, i) => (
                   <li key={i} style={cardStyle}>{e.date}: {e.description}</li>
                 ))}
               </ul>

@@ -12,9 +12,6 @@
     #root {
       padding: 20px;
     }
-    input, select, button {
-      font-family: Arial, sans-serif;
-    }
   </style>
 </head>
 <body>
@@ -25,12 +22,12 @@
   <script src="https://unpkg.com/react-dom @18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/ @babel/standalone/babel.min.js"></script>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase + Firestore -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js ';
     import { getFirestore, collection, doc, addDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js ';
 
-    // ✅ YOUR FIREBASE CONFIG FROM CONSOLE
+    // Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyA-xbyIbrFwQVQU0WxV2-5bxtWJfqwGMGU",
       authDomain: "st-expressgit.firebaseapp.com",
@@ -57,7 +54,7 @@
     };
   </script>
 
-  <!-- Logistics Tracking App Code -->
+  <!-- App -->
   <script type="text/babel">
     const { useState, useEffect } = React;
 

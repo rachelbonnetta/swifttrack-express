@@ -385,7 +385,6 @@ function App() {
       marginTop: '30px'
     }}>
       <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Admin Dashboard</h2>
-
       <h3 style={{ marginBottom: '10px' }}>All Shipments</h3>
       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
         <thead>

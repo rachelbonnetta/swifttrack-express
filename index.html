@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Swift Track Express</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       margin: 0;
@@ -18,16 +19,15 @@
   <div id="root"></div>
 
   <!-- React -->
-  <script src="https://unpkg.com/react @18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom @18/umd/react-dom.development.js" crossorigin></script>
+  <script crossorigin src="https://unpkg.com/react @18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom @18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/ @babel/standalone/babel.min.js"></script>
 
-  <!-- Firebase + Firestore -->
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js ';
     import { getFirestore, collection, doc, addDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js ';
 
-    // Your Firebase config — replace with your own
     const firebaseConfig = {
       apiKey: "AIzaSyA-xbyIbrFwQVQU0WxV2-5bxtWJfqwGMGU",
       authDomain: "st-expressgit.firebaseapp.com",
@@ -37,16 +37,12 @@
       appId: "1:237397224823:web:d0abe2b4c2b00665f2c572"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Reference to shipments collection
-    const shipmentsCollection = collection(db, 'shipments');
-
     window.firebaseDB = {
       db,
-      shipmentsCollection,
+      shipmentsCollection: collection(db, 'shipments'),
       addDoc,
       updateDoc,
       onSnapshot,
@@ -54,14 +50,12 @@
     };
   </script>
 
-  <!-- App -->
+  <!-- App Logic -->
   <script type="text/babel">
-    const { useState, useEffect } = React;
-
     function App() {
-      const [currentView, setCurrentView] = useState('home');
-      const [trackingId, setTrackingId] = useState('');
-      const [formValues, setFormValues] = useState({
+      const [currentView, setCurrentView] = React.useState('home');
+      const [trackingId, setTrackingId] = React.useState('');
+      const [formValues, setFormValues] = React.useState({
         sender: '',
         recipient: '',
         origin: '',
@@ -70,10 +64,10 @@
         description: ''
       });
 
-      const [shipments, setShipments] = useState({});
+      const [shipments, setShipments] = React.useState({});
 
       // Handle URL hash changes
-      useEffect(() => {
+      React.useEffect(() => {
         const handleHashChange = () => {
           const hash = window.location.hash.replace('#', '');
           if (hash === '') {
@@ -104,7 +98,7 @@
       }, []);
 
       // Load shipments from Firestore
-      useEffect(() => {
+      React.useEffect(() => {
         const { shipmentsCollection, onSnapshot } = window.firebaseDB;
 
         const unsubscribe = onSnapshot(shipmentsCollection, (snapshot) => {
@@ -185,7 +179,7 @@
       );
 
       const renderHome = () => {
-        const [searchInput, setSearchInput] = useState('');
+        const [searchInput, setSearchInput] = React.useState('');
 
         const handleSearch = () => {
           if (searchInput.trim()) {
@@ -285,28 +279,33 @@
         );
       };
 
-      const renderReceipt = () => (
-        <div style={{
-          maxWidth: '500px',
-          margin: 'auto',
-          padding: '30px',
-          textAlign: 'center',
-          background: '#fff',
-          borderRadius: '10px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          marginTop: '30px'
-        }}>
-          <h2 style={{ color: '#28a745' }}>Payment Successful!</h2>
-          <p><strong>Tracking ID:</strong> {trackingId}</p>
-          <p><strong>Transaction ID:</strong> TXN{Math.floor(10000000 + Math.random() * 90000000)}</p>
-          <p><strong>Total:</strong> ${formValues.weight * 60}</p>
+      const renderReceipt = () => {
+        const data = shipments[trackingId];
+        if (!data) return null;
 
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
-            <a href={`#track/${trackingId}`} style={linkButtonStyle}>View Public Tracking</a>
-            <a href={`#dashboard/${trackingId}`} style={linkButtonStyle}>Access Dashboard</a>
+        return (
+          <div style={{
+            maxWidth: '500px',
+            margin: 'auto',
+            padding: '30px',
+            textAlign: 'center',
+            background: '#fff',
+            borderRadius: '10px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            marginTop: '30px'
+          }}>
+            <h2 style={{ color: '#28a745' }}>Payment Successful!</h2>
+            <p><strong>Tracking ID:</strong> {trackingId}</p>
+            <p><strong>Transaction ID:</strong> TXN{Math.floor(10000000 + Math.random() * 90000000)}</p>
+            <p><strong>Total:</strong> ${formValues.weight * 60}</p>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
+              <a href={`#track/${trackingId}`} style={linkButtonStyle}>View Public Tracking</a>
+              <a href={`#dashboard/${trackingId}`} style={linkButtonStyle}>Access Dashboard</a>
+            </div>
           </div>
-        </div>
-      );
+        );
+      };
 
       const renderDashboard = () => {
         const data = shipments[trackingId];
@@ -382,9 +381,7 @@
               <h3 style={{ marginBottom: '10px' }}>Events</h3>
               <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
                 {data.events.map((event, index) => (
-                  <li key={index} style={cardStyle}>
-                    {event.date}: {event.description}
-                  </li>
+                  <li key={index} style={cardStyle}>{event.date}: {event.description}</li>
                 ))}
               </ul>
             </div>
@@ -422,9 +419,7 @@
             <h3>Timeline</h3>
             <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
               {data.events.map((event, index) => (
-                <li key={index} style={cardStyle}>
-                  {event.date}: {event.description}
-                </li>
+                <li key={index} style={cardStyle}>{event.date}: {event.description}</li>
               ))}
             </ul>
           </div>
@@ -442,7 +437,6 @@
           marginTop: '30px'
         }}>
           <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Admin Dashboard</h2>
-
           <h3 style={{ marginBottom: '10px' }}>All Shipments</h3>
           <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
             <thead>

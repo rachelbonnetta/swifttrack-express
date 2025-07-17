@@ -70,30 +70,28 @@ function App() {
   };
 
   const handleCreateShipment = async () => {
-    const id = generateTrackingId();
-    const cost = formValues.weight * 60; // $60 per kg
-    const newShipment = {
-      id,
-      carrier: 'SwiftTrack Express',
-      sender: formValues.sender,
-      recipient: formValues.recipient,
-      origin: formValues.origin,
-      destination: formValues.destination,
-      weight: formValues.weight,
-      description: formValues.description,
-      cost,
-      status: 'created',
-      currentLocation: formValues.origin,
-      estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      notes: '',
-      events: [{ date: new Date().toISOString().split('T')[0], description: 'Shipment created' }]
-    };
-
-    await window.firebaseDB.addDoc(window.firebaseDB.shipmentsCollection, newShipment);
-    setTrackingId(id);
-    window.location.hash = `/receipt/${id}`;
+  const id = generateTrackingId();
+  const cost = formValues.weight * 60; // $60 per kg
+  const newShipment = {
+    id,
+    carrier: 'SwiftTrack Express',
+    sender: formValues.sender,
+    recipient: formValues.recipient,
+    origin: formValues.origin,
+    destination: formValues.destination,
+    weight: formValues.weight,
+    description: formValues.description,
+    cost,
+    status: 'created',
+    currentLocation: formValues.origin,
+    estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    notes: '',
+    events: [{ date: new Date().toISOString().split('T')[0], description: 'Shipment created' }]
   };
-
+  await window.firebaseDB.addDoc(window.firebaseDB.shipmentsCollection, newShipment);
+  setTrackingId(id);
+  window.location.hash = `/receipt/${id}`;
+};
   const updateShipmentStatus = async (key, value) => {
     const shipmentRef = window.firebaseDB.doc(window.firebaseDB.shipmentsCollection, trackingId);
     await window.firebaseDB.updateDoc(shipmentRef, { [key]: value });

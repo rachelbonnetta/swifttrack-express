@@ -5,12 +5,13 @@
   <title>Swift Track Express</title>
 </head>
 <body>
-  <!-- Root Div -->
   <div id="root"></div>
 
-  <!-- React + Babel -->
+  <!-- React -->
   <script src="https://unpkg.com/react @18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom @18/umd/react-dom.development.js" crossorigin></script>
+
+  <!-- Babel -->
   <script src="https://unpkg.com/ @babel/standalone/babel.min.js"></script>
 
   <!-- Firebase SDK -->
@@ -18,6 +19,7 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js ';
     import { getFirestore, collection, doc, addDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js ';
 
+    // Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyA-xbyIbrFwQVQU0WxV2-5bxtWJfqwGMGU",
       authDomain: "st-expressgit.firebaseapp.com",
@@ -27,11 +29,14 @@
       appId: "1:237397224823:web:d0abe2b4c2b00665f2c572"
     };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // Reference to shipments collection
     const shipmentsCollection = collection(db, 'shipments');
 
+    // Store Firebase functions globally for easy access
     window.firebaseDB = {
       db,
       shipmentsCollection,
@@ -42,14 +47,11 @@
     };
   </script>
 
-  <!-- Inline React App -->
+  <!-- React App -->
   <script type="text/babel">
     function App() {
       const [message, setMessage] = React.useState('Welcome to Swift Track Express');
-
-      const handleClick = () => {
-        setMessage('You clicked me!');
-      };
+      const handleClick = () => setMessage('You clicked me!');
 
       return (
         <div style={{ textAlign: 'center', marginTop: '50px' }}>

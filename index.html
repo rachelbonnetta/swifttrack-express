@@ -19,61 +19,28 @@
   <!-- Root Div -->
   <div id="root"></div>
 
- <!-- React -->
-<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- React -->
+  <script src="https://unpkg.com/react @18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom @18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/ @babel/standalone/babel.min.js"></script>
 
-<!-- Babel for JSX support -->
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js ';
-    import { getFirestore, collection, doc, addDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js ';
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyA-xbyIbrFwQVQU0WxV2-5bxtWJfqwGMGU",
-      authDomain: "st-expressgit.firebaseapp.com",
-      projectId: "st-expressgit",
-      storageBucket: "st-expressgit.appspot.com",
-      messagingSenderId: "237397224823",
-      appId: "1:237397224823:web:d0abe2b4c2b00665f2c572"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const shipmentsCollection = collection(db, 'shipments');
-
-    window.firebaseDB = {
-      db,
-      shipmentsCollection,
-      addDoc,
-      updateDoc,
-      onSnapshot,
-      doc
-    };
-  </script>
-
-  <!-- React App Logic -->
   <script type="text/babel">
-    const { useState, useEffect } = React;
-
     function App() {
       const [currentView, setCurrentView] = useState('home');
       const [trackingId, setTrackingId] = useState('');
+      const [shipmentData, setShipmentData] = useState({});
+      const [shipments, setShipments] = useState({});
       const [formValues, setFormValues] = useState({
         sender: '',
         recipient: '',
         origin: '',
         destination: '',
         weight: '',
-        description: ''
+        description: '',
+        carrier: 'SwiftTrack Express',
       });
 
-      const [shipments, setShipments] = useState({});
-
-      // Handle URL hash changes
+      // Handle hash changes
       useEffect(() => {
         const handleHashChange = () => {
           const hash = window.location.hash.replace('#', '');
@@ -102,21 +69,6 @@
         handleHashChange();
 
         return () => window.removeEventListener('hashchange', handleHashChange);
-      }, []);
-
-      // Load shipments from Firestore
-      useEffect(() => {
-        const { shipmentsCollection, onSnapshot } = window.firebaseDB;
-
-        const unsubscribe = onSnapshot(shipmentsCollection, (snapshot) => {
-          const data = {};
-          snapshot.forEach((doc) => {
-            data[doc.id] = doc.data();
-          });
-          setShipments(data);
-        });
-
-        return () => unsubscribe();
       }, []);
 
       const handleInputChange = (e) => {
@@ -185,23 +137,14 @@
         </header>
       );
 
-      const renderHome = () => {
-        const [searchInput, setSearchInput] = useState('');
-
-        const handleSearch = () => {
-          if (searchInput.trim()) {
-            window.location.hash = `/track/${searchInput.trim()}`;
-          }
-        };
-
-        return (
-          <div style={{
-            maxWidth: '600px',
-            margin: 'auto',
-            padding: '20px',
-            textAlign: 'center'
-          }}>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Track Your Shipment</h2>
+      const renderHome = () => (
+        <div style={{
+          maxWidth: '600px',
+          margin: 'auto',
+          padding: '20px',
+          textAlign: 'center'
+        }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Track Your Shipment</h2>
 
             {/* Tracking Number Input */}
             <div style={{
@@ -265,26 +208,25 @@
                 Cost: ${formValues.weight ? (formValues.weight * 60).toFixed(2) : 0}
               </div>
 
-              <button
-                onClick={handleCreateShipment}
-                disabled={!formValues.weight || !formValues.sender || !formValues.recipient}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  backgroundColor: formValues.weight && formValues.sender && formValues.recipient ? '#FF9900' : '#ccc',
-                  color: '#fff',
-                  fontWeight: 'bold',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: formValues.weight && formValues.sender && formValues.recipient ? 'pointer' : 'not-allowed'
-                }}
-              >
-                Proceed to Payment
-              </button>
-            </div>
+            <button
+              onClick={handleCreateShipment}
+              disabled={!formValues.weight || !formValues.sender || !formValues.recipient}
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: formValues.weight && formValues.sender && formValues.recipient ? '#FF9900' : '#ccc',
+                color: '#fff',
+                fontWeight: 'bold',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: formValues.weight && formValues.sender && formValues.recipient ? 'pointer' : 'not-allowed'
+              }}
+            >
+              Proceed to Payment
+            </button>
           </div>
-        );
-      };
+        </div>
+      );
 
       const renderReceipt = () => (
         <div style={{
@@ -300,14 +242,15 @@
           <h2 style={{ color: '#28a745' }}>Payment Successful!</h2>
           <p><strong>Tracking ID:</strong> {trackingId}</p>
           <p><strong>Transaction ID:</strong> TXN{Math.floor(10000000 + Math.random() * 90000000)}</p>
-          <p><strong>Total:</strong> ${formValues.weight * 60}</p>
+          <p><strong>Total:</strong> ${shipmentData.cost}</p>
 
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
-            <a href={`#track/${trackingId}`} style={linkButtonStyle}>View Public Tracking</a>
-            <a href={`#dashboard/${trackingId}`} style={linkButtonStyle}>Access Dashboard</a>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
+              <a href={`#track/${trackingId}`} style={linkButtonStyle}>View Public Tracking</a>
+              <a href={`#dashboard/${trackingId}`} style={linkButtonStyle}>Access Dashboard</a>
+            </div>
           </div>
-        </div>
-      );
+        );
+      };
 
       const renderDashboard = () => {
         const data = shipments[trackingId];
@@ -382,8 +325,8 @@
             <div style={{ marginTop: '20px' }}>
               <h3 style={{ marginBottom: '10px' }}>Events</h3>
               <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-                {data.events.map((e, i) => (
-                  <li key={i} style={cardStyle}>{e.date}: {e.description}</li>
+                {data.events.map((event, index) => (
+                  <li key={index} style={cardStyle}>{event.date}: {event.description}</li>
                 ))}
               </ul>
             </div>
@@ -420,8 +363,8 @@
 
             <h3>Timeline</h3>
             <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-              {data.events.map((e, i) => (
-                <li key={i} style={cardStyle}>{e.date}: {e.description}</li>
+              {data.events.map((event, index) => (
+                <li key={index} style={cardStyle}>{event.date}: {event.description}</li>
               ))}
             </ul>
           </div>
@@ -439,7 +382,6 @@
           marginTop: '30px'
         }}>
           <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Admin Dashboard</h2>
-
           <h3 style={{ marginBottom: '10px' }}>All Shipments</h3>
           <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
             <thead>

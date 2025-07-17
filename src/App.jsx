@@ -385,7 +385,10 @@ function App() {
       marginTop: '30px'
     }}>
       <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Admin Dashboard</h2>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 44f9d85abf2c3de08d96dd56ae89212629b1b63a
       <h3 style={{ marginBottom: '10px' }}>All Shipments</h3>
       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
         <thead>
@@ -442,4 +445,8 @@ function App() {
   );
 }
 
+<<<<<<< HEAD
 export default App;
+=======
+export default App;
+>>>>>>> 44f9d85abf2c3de08d96dd56ae89212629b1b63a

@@ -16,7 +16,6 @@
   </style>
 </head>
 <body>
-  <!-- Root Div -->
   <div id="root"></div>
 
   <!-- React -->
@@ -24,24 +23,50 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
+    import { getFirestore, collection, doc, addDoc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js ';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-xbyIbrFwQVQU0WxV2-5bxtWJfqwGMGU",
+      authDomain: "st-expressgit.firebaseapp.com",
+      projectId: "st-expressgit",
+      storageBucket: "st-expressgit.firebasestorage.app",
+      messagingSenderId: "237397224823",
+      appId: "1:237397224823:web:d0abe2b4c2b00665f2c572"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.firebaseDB = {
+      db,
+      shipmentsCollection: collection(db, 'shipments'),
+      addDoc,
+      updateDoc,
+      onSnapshot,
+      doc
+    };
+  </script>
+
+  <!-- Inline React App -->
   <script type="text/babel">
     function App() {
-      const [currentView, setCurrentView] = useState('home');
-      const [trackingId, setTrackingId] = useState('');
-      const [shipmentData, setShipmentData] = useState({});
-      const [shipments, setShipments] = useState({});
-      const [formValues, setFormValues] = useState({
+      const [currentView, setCurrentView] = React.useState('home');
+      const [trackingId, setTrackingId] = React.useState('');
+      const [formValues, setFormValues] = React.useState({
         sender: '',
         recipient: '',
         origin: '',
         destination: '',
         weight: '',
-        description: '',
-        carrier: 'SwiftTrack Express',
+        description: ''
       });
+      const [shipments, setShipments] = React.useState({});
 
-      // Handle hash changes
-      useEffect(() => {
+      // Handle URL hash changes
+      React.useEffect(() => {
         const handleHashChange = () => {
           const hash = window.location.hash.replace('#', '');
           if (hash === '') {
@@ -69,6 +94,21 @@
         handleHashChange();
 
         return () => window.removeEventListener('hashchange', handleHashChange);
+      }, []);
+
+      // Load shipments from Firebase
+      React.useEffect(() => {
+        const { shipmentsCollection, onSnapshot } = window.firebaseDB;
+
+        const unsubscribe = onSnapshot(shipmentsCollection, (snapshot) => {
+          const data = {};
+          snapshot.forEach((doc) => {
+            data[doc.id] = doc.data();
+          });
+          setShipments(data);
+        });
+
+        return () => unsubscribe();
       }, []);
 
       const handleInputChange = (e) => {
@@ -100,9 +140,14 @@
           events: [{ date: new Date().toISOString().split('T')[0], description: 'Shipment created' }]
         };
 
-        await window.firebaseDB.addDoc(window.firebaseDB.shipmentsCollection, newShipment);
-        setTrackingId(id);
-        window.location.hash = `/receipt/${id}`;
+        try {
+          await window.firebaseDB.addDoc(window.firebaseDB.shipmentsCollection, newShipment);
+          setTrackingId(id);
+          window.location.hash = `/receipt/${id}`;
+        } catch (error) {
+          console.error("Error creating shipment:", error);
+          alert("Failed to create shipment: " + error.message);
+        }
       };
 
       const updateShipmentStatus = async (key, value) => {
@@ -137,14 +182,23 @@
         </header>
       );
 
-      const renderHome = () => (
-        <div style={{
-          maxWidth: '600px',
-          margin: 'auto',
-          padding: '20px',
-          textAlign: 'center'
-        }}>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Track Your Shipment</h2>
+      const renderHome = () => {
+        const [searchInput, setSearchInput] = React.useState('');
+
+        const handleSearch = () => {
+          if (searchInput.trim()) {
+            window.location.hash = `/track/${searchInput.trim()}`;
+          }
+        };
+
+        return (
+          <div style={{
+            maxWidth: '600px',
+            margin: 'auto',
+            padding: '20px',
+            textAlign: 'center'
+          }}>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Track Your Shipment</h2>
 
             {/* Tracking Number Input */}
             <div style={{
@@ -208,41 +262,46 @@
                 Cost: ${formValues.weight ? (formValues.weight * 60).toFixed(2) : 0}
               </div>
 
-            <button
-              onClick={handleCreateShipment}
-              disabled={!formValues.weight || !formValues.sender || !formValues.recipient}
-              style={{
-                width: '100%',
-                padding: '12px',
-                backgroundColor: formValues.weight && formValues.sender && formValues.recipient ? '#FF9900' : '#ccc',
-                color: '#fff',
-                fontWeight: 'bold',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: formValues.weight && formValues.sender && formValues.recipient ? 'pointer' : 'not-allowed'
-              }}
-            >
-              Proceed to Payment
-            </button>
+              <button
+                onClick={handleCreateShipment}
+                disabled={!formValues.weight || !formValues.sender || !formValues.recipient}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: formValues.weight && formValues.sender && formValues.recipient ? '#FF9900' : '#ccc',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: formValues.weight && formValues.sender && formValues.recipient ? 'pointer' : 'not-allowed'
+                }}
+              >
+                Proceed to Payment
+              </button>
+            </div>
           </div>
-        </div>
-      );
+        );
+      };
 
-      const renderReceipt = () => (
-        <div style={{
-          maxWidth: '500px',
-          margin: 'auto',
-          padding: '30px',
-          textAlign: 'center',
-          background: '#fff',
-          borderRadius: '10px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          marginTop: '30px'
-        }}>
-          <h2 style={{ color: '#28a745' }}>Payment Successful!</h2>
-          <p><strong>Tracking ID:</strong> {trackingId}</p>
-          <p><strong>Transaction ID:</strong> TXN{Math.floor(10000000 + Math.random() * 90000000)}</p>
-          <p><strong>Total:</strong> ${shipmentData.cost}</p>
+      const renderReceipt = () => {
+        const data = shipments[trackingId];
+        if (!data) return null;
+
+        return (
+          <div style={{
+            maxWidth: '500px',
+            margin: 'auto',
+            padding: '30px',
+            textAlign: 'center',
+            background: '#fff',
+            borderRadius: '10px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            marginTop: '30px'
+          }}>
+            <h2 style={{ color: '#28a745' }}>Payment Successful!</h2>
+            <p><strong>Tracking ID:</strong> {trackingId}</p>
+            <p><strong>Transaction ID:</strong> TXN{Math.floor(10000000 + Math.random() * 90000000)}</p>
+            <p><strong>Total:</strong> ${data.cost}</p>
 
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
               <a href={`#track/${trackingId}`} style={linkButtonStyle}>View Public Tracking</a>

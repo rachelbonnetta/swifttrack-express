@@ -11,7 +11,6 @@ function App() {
     weight: '',
     description: ''
   });
-
   const [shipments, setShipments] = useState({});
 
   // Handle URL hash changes
@@ -89,9 +88,14 @@ function App() {
       events: [{ date: new Date().toISOString().split('T')[0], description: 'Shipment created' }]
     };
 
-    await window.firebaseDB.addDoc(window.firebaseDB.shipmentsCollection, newShipment);
-    setTrackingId(id);
-    window.location.hash = `/receipt/${id}`;
+    try {
+      await window.firebaseDB.addDoc(window.firebaseDB.shipmentsCollection, newShipment);
+      setTrackingId(id);
+      window.location.hash = `/receipt/${id}`;
+    } catch (error) {
+      console.error("Error creating shipment:", error);
+      alert("Failed to create shipment: " + error.message);
+    }
   };
 
   const updateShipmentStatus = async (key, value) => {
@@ -245,7 +249,7 @@ function App() {
         <h2 style={{ color: '#28a745' }}>Payment Successful!</h2>
         <p><strong>Tracking ID:</strong> {trackingId}</p>
         <p><strong>Transaction ID:</strong> TXN{Math.floor(10000000 + Math.random() * 90000000)}</p>
-        <p><strong>Total:</strong> ${formValues.weight * 60}</p>
+        <p><strong>Total:</strong> ${data.cost}</p>
 
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
           <a href={`#track/${trackingId}`} style={linkButtonStyle}>View Public Tracking</a>
@@ -328,8 +332,8 @@ function App() {
         <div style={{ marginTop: '20px' }}>
           <h3 style={{ marginBottom: '10px' }}>Events</h3>
           <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-            {data.events.map((e, i) => (
-              <li key={i} style={cardStyle}>{e.date}: {e.description}</li>
+            {data.events.map((event, index) => (
+              <li key={index} style={cardStyle}>{event.date}: {event.description}</li>
             ))}
           </ul>
         </div>
@@ -366,8 +370,8 @@ function App() {
 
         <h3>Timeline</h3>
         <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-          {data.events.map((e, i) => (
-            <li key={i} style={cardStyle}>{e.date}: {e.description}</li>
+          {data.events.map((event, index) => (
+            <li key={index} style={cardStyle}>{event.date}: {event.description}</li>
           ))}
         </ul>
       </div>
@@ -440,5 +444,41 @@ function App() {
     </div>
   );
 }
+
+// Styles
+const inputStyle = {
+  width: '100%',
+  padding: '10px',
+  borderRadius: '6px',
+  border: '1px solid #ccc'
+};
+
+const linkButtonStyle = {
+  padding: '10px 20px',
+  backgroundColor: '#003366',
+  color: 'white',
+  textDecoration: 'none',
+  borderRadius: '6px',
+  fontWeight: 'bold',
+  display: 'inline-block',
+  marginTop: '10px'
+};
+
+const cardStyle = {
+  padding: '10px',
+  border: '1px solid #ddd',
+  borderRadius: '6px'
+};
+
+const tableHeaderStyle = {
+  textAlign: 'left',
+  padding: '10px',
+  borderBottom: '1px solid #ccc'
+};
+
+const tableCellStyle = {
+  padding: '10px',
+  borderBottom: '1px solid #eee'
+};
 
 export default App;

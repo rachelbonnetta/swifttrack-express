@@ -44,7 +44,7 @@ function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Load shipments from Firestore
+  // Load shipments from Firebase
   useEffect(() => {
     const { shipmentsCollection, onSnapshot } = window.firebaseDB;
 

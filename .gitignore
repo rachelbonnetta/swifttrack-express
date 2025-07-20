@@ -4,6 +4,26 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+<<<<<<< HEAD
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+=======
 firebase-debug.log*
 firebase-debug.*.log*
 
@@ -67,3 +87,4 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+>>>>>>> 44f9d85abf2c3de08d96dd56ae89212629b1b63a

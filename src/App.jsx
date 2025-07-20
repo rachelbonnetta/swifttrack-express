@@ -11,7 +11,6 @@ function App() {
     weight: '',
     description: ''
   });
-
   const [shipments, setShipments] = useState({});
 
   // Handle URL hash changes
@@ -70,28 +69,35 @@ function App() {
   };
 
   const handleCreateShipment = async () => {
-  const id = generateTrackingId();
-  const cost = formValues.weight * 60; // $60 per kg
-  const newShipment = {
-    id,
-    carrier: 'SwiftTrack Express',
-    sender: formValues.sender,
-    recipient: formValues.recipient,
-    origin: formValues.origin,
-    destination: formValues.destination,
-    weight: formValues.weight,
-    description: formValues.description,
-    cost,
-    status: 'created',
-    currentLocation: formValues.origin,
-    estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    notes: '',
-    events: [{ date: new Date().toISOString().split('T')[0], description: 'Shipment created' }]
+    const id = generateTrackingId();
+    const cost = formValues.weight * 60; // $60 per kg
+    const newShipment = {
+      id,
+      carrier: 'SwiftTrack Express',
+      sender: formValues.sender,
+      recipient: formValues.recipient,
+      origin: formValues.origin,
+      destination: formValues.destination,
+      weight: formValues.weight,
+      description: formValues.description,
+      cost,
+      status: 'created',
+      currentLocation: formValues.origin,
+      estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      notes: '',
+      events: [{ date: new Date().toISOString().split('T')[0], description: 'Shipment created' }]
+    };
+
+    try {
+      await window.firebaseDB.addDoc(window.firebaseDB.shipmentsCollection, newShipment);
+      setTrackingId(id);
+      window.location.hash = `/receipt/${id}`;
+    } catch (error) {
+      console.error("Error creating shipment:", error);
+      alert("Failed to create shipment: " + error.message);
+    }
   };
-  await window.firebaseDB.addDoc(window.firebaseDB.shipmentsCollection, newShipment);
-  setTrackingId(id);
-  window.location.hash = `/receipt/${id}`;
-};
+
   const updateShipmentStatus = async (key, value) => {
     const shipmentRef = window.firebaseDB.doc(window.firebaseDB.shipmentsCollection, trackingId);
     await window.firebaseDB.updateDoc(shipmentRef, { [key]: value });
@@ -243,7 +249,7 @@ function App() {
         <h2 style={{ color: '#28a745' }}>Payment Successful!</h2>
         <p><strong>Tracking ID:</strong> {trackingId}</p>
         <p><strong>Transaction ID:</strong> TXN{Math.floor(10000000 + Math.random() * 90000000)}</p>
-        <p><strong>Total:</strong> ${formValues.weight * 60}</p>
+        <p><strong>Total:</strong> ${data.cost}</p>
 
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
           <a href={`#track/${trackingId}`} style={linkButtonStyle}>View Public Tracking</a>
@@ -326,8 +332,8 @@ function App() {
         <div style={{ marginTop: '20px' }}>
           <h3 style={{ marginBottom: '10px' }}>Events</h3>
           <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-            {data.events.map((e, i) => (
-              <li key={i} style={cardStyle}>{e.date}: {e.description}</li>
+            {data.events.map((event, index) => (
+              <li key={index} style={cardStyle}>{event.date}: {event.description}</li>
             ))}
           </ul>
         </div>
@@ -364,8 +370,8 @@ function App() {
 
         <h3>Timeline</h3>
         <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-          {data.events.map((e, i) => (
-            <li key={i} style={cardStyle}>{e.date}: {e.description}</li>
+          {data.events.map((event, index) => (
+            <li key={index} style={cardStyle}>{event.date}: {event.description}</li>
           ))}
         </ul>
       </div>
@@ -383,10 +389,6 @@ function App() {
       marginTop: '30px'
     }}>
       <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Admin Dashboard</h2>
-<<<<<<< HEAD
-
-=======
->>>>>>> 44f9d85abf2c3de08d96dd56ae89212629b1b63a
       <h3 style={{ marginBottom: '10px' }}>All Shipments</h3>
       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
         <thead>
@@ -443,8 +445,40 @@ function App() {
   );
 }
 
-<<<<<<< HEAD
+// Styles
+const inputStyle = {
+  width: '100%',
+  padding: '10px',
+  borderRadius: '6px',
+  border: '1px solid #ccc'
+};
+
+const linkButtonStyle = {
+  padding: '10px 20px',
+  backgroundColor: '#003366',
+  color: 'white',
+  textDecoration: 'none',
+  borderRadius: '6px',
+  fontWeight: 'bold',
+  display: 'inline-block',
+  marginTop: '10px'
+};
+
+const cardStyle = {
+  padding: '10px',
+  border: '1px solid #ddd',
+  borderRadius: '6px'
+};
+
+const tableHeaderStyle = {
+  textAlign: 'left',
+  padding: '10px',
+  borderBottom: '1px solid #ccc'
+};
+
+const tableCellStyle = {
+  padding: '10px',
+  borderBottom: '1px solid #eee'
+};
+
 export default App;
-=======
-export default App;
->>>>>>> 44f9d85abf2c3de08d96dd56ae89212629b1b63a

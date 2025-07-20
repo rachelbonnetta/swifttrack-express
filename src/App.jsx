@@ -44,7 +44,7 @@ function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Load shipments from Firestore
+  // Load shipments from Firebase
   useEffect(() => {
     const { shipmentsCollection, onSnapshot } = window.firebaseDB;
 
@@ -330,7 +330,7 @@ function App() {
         </div>
 
         <div style={{ marginTop: '20px' }}>
-          <h3 style={{ marginBottom: '10px' }}>Events</h3>
+          <h3>Events</h3>
           <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
             {data.events.map((event, index) => (
               <li key={index} style={cardStyle}>{event.date}: {event.description}</li>
@@ -480,5 +480,14 @@ const tableCellStyle = {
   padding: '10px',
   borderBottom: '1px solid #eee'
 };
+
+// Render App
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(<App />);
+} else {
+  console.error("Could not find #root");
+}
 
 export default App;

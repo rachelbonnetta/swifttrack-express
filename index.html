@@ -19,8 +19,8 @@
   <div id="root"></div>
 
   <!-- React -->
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <!-- Firebase SDK -->
@@ -96,7 +96,7 @@
         return () => window.removeEventListener('hashchange', handleHashChange);
       }, []);
 
-      // Load shipments from Firebase
+      // Load shipments from Firestore
       React.useEffect(() => {
         const { shipmentsCollection, onSnapshot } = window.firebaseDB;
 
@@ -122,7 +122,8 @@
 
       const handleCreateShipment = async () => {
         const id = generateTrackingId();
-        const cost = formValues.weight * 60; // $60 per kg
+        const cost = formValues.weight * 60;
+
         const newShipment = {
           id,
           carrier: 'SwiftTrack Express',
@@ -148,11 +149,6 @@
           console.error("Error creating shipment:", error);
           alert("Failed to create shipment: " + error.message);
         }
-      };
-
-      const updateShipmentStatus = async (key, value) => {
-        const shipmentRef = window.firebaseDB.doc(window.firebaseDB.shipmentsCollection, trackingId);
-        await window.firebaseDB.updateDoc(shipmentRef, { [key]: value });
       };
 
       const renderLogo = () => (
@@ -240,15 +236,15 @@
               border: '1px solid #ddd',
               borderRadius: '10px',
               padding: '20px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+              textAlign: 'left'
             }}>
               <h2 style={{ fontSize: '1.2rem', marginBottom: '15px' }}>Create New Shipment</h2>
               <form onSubmit={(e) => { e.preventDefault(); handleCreateShipment(); }} style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
                 gap: '10px',
-                marginBottom: '15px',
-                textAlign: 'left'
+                marginBottom: '15px'
               }}>
                 <div><label>Sender</label><br/><input name="sender" value={formValues.sender} onChange={handleInputChange} style={inputStyle} /></div>
                 <div><label>Recipient</label><br/><input name="recipient" value={formValues.recipient} onChange={handleInputChange} style={inputStyle} /></div>
@@ -535,12 +531,8 @@
 
     // Render App
     const rootElement = document.getElementById('root');
-    if (rootElement) {
-      const root = ReactDOM.createRoot(rootElement);
-      root.render(<App />);
-    } else {
-      console.error("Could not find #root");
-    }
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<App />);
   </script>
 </body>
 </html>
